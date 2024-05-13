@@ -65,11 +65,12 @@ describe("SettlementApp", () => {
 
     it("Posts and retrieves a message", async () => {
         const taskId = new anchor.BN(1);
+        const sender = "0x1Fe627295dCaca6bef89C03947fAc62e00E3B504";
         const message = "Hello, Solana!";
 
         // Post the message
         await program.methods
-            .postMsg(taskId, message)
+            .postMsg(taskId, sender, message)
             .accounts({
                 baseAccount: baseAccount.publicKey,
                 operator: operator.publicKey,

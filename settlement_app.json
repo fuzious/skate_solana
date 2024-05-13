@@ -1,0 +1,191 @@
+{
+  "address": "6WLn4dADBiEZ2DTwJwawyj9bti7Az3EATkgMzL8yE8dk",
+  "metadata": {
+    "name": "settlement_app",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "deregister_operator",
+      "discriminator": [
+        229,
+        98,
+        238,
+        100,
+        57,
+        56,
+        156,
+        124
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "base_account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "operator",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "get_msg",
+      "discriminator": [
+        229,
+        11,
+        192,
+        6,
+        117,
+        192,
+        145,
+        21
+      ],
+      "accounts": [
+        {
+          "name": "base_account"
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "base_account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "task_id",
+          "type": "u64"
+        }
+      ],
+      "returns": "string"
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "owner",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "post_msg",
+      "discriminator": [
+        73,
+        64,
+        183,
+        16,
+        112,
+        158,
+        78,
+        62
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true
+        },
+        {
+          "name": "operator",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "task_id",
+          "type": "u64"
+        },
+        {
+          "name": "message",
+          "type": "string"
+        },
+        {
+          "name": "sender",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "register_operator",
+      "discriminator": [
+        49,
+        242,
+        151,
+        125,
+        212,
+        136,
+        31,
+        89
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "base_account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "operator",
+          "type": "pubkey"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "MessageNotFound",
+      "msg": "Message not found."
+    },
+    {
+      "code": 6001,
+      "name": "OperatorNotFound",
+      "msg": "Operator not found."
+    }
+  ]
+}

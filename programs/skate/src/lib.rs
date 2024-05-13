@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 
 declare_id!("6WLn4dADBiEZ2DTwJwawyj9bti7Az3EATkgMzL8yE8dk");
 
-
 #[program]
 pub mod settlement_app {
     use super::*;
@@ -32,31 +31,31 @@ pub mod settlement_app {
         Ok(())
     }
 
-    pub fn post_msg(ctx: Context<OperatorAuth>, task_id: u64, message: String) -> Result<()> {
+    pub fn post_msg(ctx: Context<OperatorAuth>, task_id: u64, message: String, sender: String) -> Result<()> {
         let base_account = &mut ctx.accounts.base_account;
+        let signer = ctx.accounts.operator.key();
+        let combined_message = format!("{}: {}: {}", sender, signer, message); // Concatenating sender, signer, and message
+
         let idx = base_account.messages.iter().position(|(id, _)| *id == task_id);
         if let Some(index) = idx {
-            base_account.messages[index].1 = message.clone();
+            base_account.messages[index].1 = combined_message.clone();
         } else {
-            base_account.messages.push((task_id, message.clone()));
+            base_account.messages.push((task_id, combined_message.clone()));
         }
-        msg!("Message posted: Task ID {} with message: {}", task_id, message);
+        msg!("Message posted: Task ID {} with message: '{}'", task_id, combined_message);
         Ok(())
     }
 
-        pub fn get_msg(ctx: Context<OperatorAuth>, task_id: u64) -> Result<String> {
-            let base_account = &ctx.accounts.base_account;
-            match base_account.messages.iter().find(|&&(id, _)| id == task_id) {
-                Some((_, msg)) => {
-                    msg!("Message retrieved: Task ID {} with message: {}", task_id, msg);
-                    Ok(msg.clone())
-                },
-                None => {
-                    msg!("Failed to retrieve message: Task ID {} not found", task_id);
-                    Err(ErrorCode::MessageNotFound.into())
-                }
-            }
-        }
+    pub fn get_msg(ctx: Context<GetMessage>, task_id: u64) -> Result<String> {
+        let messages = &ctx.accounts.base_account.messages;
+        messages.iter()
+            .find(|&&(id, _)| id == task_id)
+            .map(|(_, msg)| {
+                msg!("Message retrieved: Task ID {} with message: '{}'", task_id, msg);
+                msg.clone()
+            })
+            .ok_or(ErrorCode::MessageNotFound.into())
+    }
 }
 
 #[derive(Accounts)]
@@ -84,16 +83,16 @@ pub struct OperatorAuth<'info> {
 
 #[derive(Accounts)]
 pub struct GetMessage<'info> {
-    #[account(mut = false)] // Ensure that the base_account is not mutable
+    #[account(has_one = owner)]
     pub base_account: Account<'info, BaseAccount>,
+    pub owner: Signer<'info>,
 }
-
 
 #[account]
 pub struct BaseAccount {
     pub owner: Pubkey,
     pub operators: Vec<Pubkey>,
-    pub messages: Vec<(u64, String)>,
+    pub messages: Vec<(u64, String)>, // Changed to store strings directly
 }
 
 #[error_code]

@@ -1,11 +1,12 @@
 import 'dotenv/config'
 import * as anchor from "@coral-xyz/anchor";
-import { SettlementApp } from "./target/types/settlement_app";
-import { Keypair } from "@solana/web3.js";
+import { SettlementApp } from "./settlement_app";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import fs from "fs";
 import path from "path";
 
 const KEYPAIR_PATH = path.join(__dirname, 'keypairs');
+const idl = JSON.parse(fs.readFileSync('./settlement_app.json', 'utf8'));
 
 // Helper functions to save and load keypairs
 function saveKeypair(keypair, filename) {
@@ -32,7 +33,8 @@ async function main() {
     // Set up the provider and program
     const provider = anchor.AnchorProvider.env();
     anchor.setProvider(provider);
-    const program = anchor.workspace.SettlementApp as anchor.Program<SettlementApp>;
+
+    const program = new anchor.Program<SettlementApp>(idl, provider) as anchor.Program<SettlementApp>;
     const payer = provider.wallet as anchor.Wallet;
 
     // Attempt to load keypairs or create new ones
@@ -55,8 +57,9 @@ async function main() {
             break;
         case "postMessage":
             const taskId = new anchor.BN(args[1]);
-            const message = args[2];
-            await postMessage(taskId, message);
+            const sender = args[2];
+            const message = args[3];
+            await postMessage(taskId, sender, message);
             break;
         case "getMessage":
             const taskIdRetrieve = new anchor.BN(args[1]);
@@ -119,10 +122,11 @@ async function main() {
         console.log(`   Transaction Signature: ${transactionSignature}`);
     }
 
-    async function postMessage(taskId, message) {
+    async function postMessage(taskId, sender, message) {
         console.log(`Operator Public Key: ${operator.publicKey.toString()}`);
+        console.log(taskId,sender,message)
         const transactionSignature = await program.methods
-            .postMsg(taskId, message)
+            .postMsg(taskId, sender, message)
             .accounts({
                 baseAccount: baseAccount.publicKey,
                 operator: operator.publicKey,
@@ -140,7 +144,7 @@ async function main() {
             .accounts({
                 baseAccount: baseAccount.publicKey,
             })
-            .rpc();  // Assuming .view() is appropriate; switch back to .rpc() if needed for state changes.
+            .view();  // Assuming .view() is appropriate; switch back to .rpc() if needed for state changes.
 
         // Assuming retrievedMessage is a buffer or Uint8Array; if it's a hex string, convert as follows:
         const messageString = Buffer.from(retrievedMessage, 'hex').toString();
